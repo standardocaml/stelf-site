@@ -1,0 +1,37 @@
+---
+title: Configuring STELF
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+The new config files are designed to be more flexible and powerful than old config files.
+Also, they use a standard format, TOML, specifically version 1.0, which is widely used and well documented.
+
+## The Basics 
+
+First off, the planned structure of a project is as follows:
+1. Each project is a group. 
+2. Groups has a name, contain dependencies, load paths, and a main file
+
+The TOML for this is 
+```toml
+[[group]]
+name = "paeno"
+main = "src/paeno.stelf"
+src = [
+    "src/paeno.stelf",
+    "src/util/*"
+]
+dependencies = [
+    "base"
+]
+```
+
+<FileTree>
+- src/
+    - paeno.stelf
+    - util/
+        - ...
+- stelf.toml
+</FileTree>
+This causes all the files in 

@@ -1,0 +1,125 @@
+---
+title: "Verifications and uses in HLF"
+---
+
+%.
+
+ This example can only be run in the Hybrid LF implementation of Twelf
+created by Jason Reed as part of his Ph.D. Thesis, 
+"A Hybrid Logical Framework." So that line above uses the [`%.`](/wiki/percent-eof/) notation to make sure that none of this file gets checked when the twelf wiki is built.
+
+The example on [verifications and uses with zippers](/wiki/verifications-and-uses-with-zippers/) has essentially the same content but actually works in non-HLF extended Twelf.
+
+This code is primarily here so it can be referenced by a [http://requestforlogic.blogspot.com/2010/09/natural-deduction-and-sequent-calculus.html blog post] by [Rob](/wiki/user-rsimmons/). 
+
+
+%.
+%hlf.
+
+ ## Propositions and rules 
+
+prop : type.
+atom : type.
+%block bl_atom : block {qp : atom}.
+
+a : atom -> prop.
+⊃ : prop -> prop -> prop. %infix right 9 ⊃.
+∧ : prop -> prop -> prop. %infix right 8 ∧.
+
+hyp   : prop -> @type.
+verif : prop -> @type.
+use   : prop -> @type.
+
+atm : hyp A -> (use A -o use (a Q)) -> verif (a Q).
+⊃I  : (hyp A₁ -> verif A₂) -> verif (A₁ ⊃ A₂).
+⊃E  : use (A₁ ⊃ A₂) -o verif A₁ -> use A₂.
+∧I  : verif A₁ -> verif A₂ -> verif (A₁ ∧ A₂).
+∧E₁ : use (B₁ ∧ B₂) -o use B₁.
+∧E₂ : use (B₁ ∧ B₂) -o use B₂.
+
+%block bl_hyp : some {A : prop} block {x : hyp A e}.
+%block bl_use : some {A : prop} block {α}{x : use A α}.
+%worlds (bl_atom | bl_hyp | bl_use) (verif _ _) (use _ _) (hyp _ _).
+
+ ## Global completeness 
+
+eta : {A} ({B} hyp B -> (use B -o use A) -> verif A) -> type.
+%mode eta +A -B.
+
+- : eta (a Q) ([B][x : hyp B][r : use B -o use (a Q)] 
+          atm x ([u :^ (use B)] r ^ u)).
+- : eta (A₁ ⊃ A₂) ([B][x : hyp B][r : use B -o use (A₁ ⊃ A₂)] 
+          ⊃I ([y : hyp A₁] N₂ B x ([u :^ (use B)]
+            ⊃E ^ (r ^ u) (N₁ A₁ y ([u :^ (use A₁)] u)))))
+     <- eta A₁ ([B] N₁ B : hyp B -> (use B -o use A₁) -> verif A₁)
+     <- eta A₂ ([B] N₂ B : hyp B -> (use B -o use A₂) -> verif A₂).
+- : eta (A₁ ∧ A₂) ([B][x : hyp B][r : use B -o use (A₁ ∧ A₂)]
+          ∧I (N₁ B x ([u :^ (use B)] ∧E₁ ^ (r ^ u))) 
+             (N₂ B x ([u :^ (use B)] ∧E₂ ^ (r ^ u))))
+     <- eta A₁ ([B] N₁ B : hyp B -> (use B -o use A₁) -> verif A₁)
+     <- eta A₂ ([B] N₂ B : hyp B -> (use B -o use A₂) -> verif A₂).
+
+%worlds (bl_atom | bl_hyp | bl_use) (eta _ _).
+%total A (eta A _).
+
+%solve s : {q}{r}{s} eta (a q ⊃ a r ⊃ a s) (X q r s).
+%solve s : {q}{r}{s} eta ((a q ⊃ a r) ⊃ a s) (X q r s).
+
+ ## Global soundness 
+
+hsubst_n  : {A}    verif A -> (hyp A -> verif B)        -> verif B -> type.
+hsubst_rr : {A}    verif A -> (hyp A -> use C -o use B) -> (use C -o use B) -> type.
+hsubst_rn : {A}{B} verif A -> (hyp A -> use A -o use B) -> verif B -> type.
+%mode hsubst_n  +A    +M₀ +M -N.
+%mode hsubst_rr +A    +M₀ +R -R'.
+%mode hsubst_rn +A +B +M₀ +R -N.
+
+- : hsubst_n A M₀ ([x : hyp A] ⊃I [y : hyp B₁] M x y) (⊃I [y : hyp B₁] N y)
+     <- {y : hyp B₁} hsubst_n A M₀ ([x : hyp A] M x y) (N y : verif B₂).
+- : hsubst_n A M₀ ([x : hyp A] ∧I (M₁ x) (M₂ x)) (∧I N₁ N₂)
+     <- hsubst_n A M₀ M₁ (N₁ : verif B₁)
+     <- hsubst_n A M₀ M₂ (N₂ : verif B₂).
+- : hsubst_n A M₀ ([x : hyp A] atm x ([u :^ (use A)] R x ^ u)) N
+     <- hsubst_rn A (a Q) M₀ R (N : verif (a Q)).
+- : hsubst_n A M₀ ([x : hyp A] atm Y (R x)) (atm Y R')
+     <- hsubst_rr A M₀ R (R' : use C -o use (a Q)).
+
+- : hsubst_rr A M₀ ([x : hyp A][u :^ (use C)] ⊃E ^ (R x ^ u) (M x)) 
+          ([u :^ (use C)] ⊃E ^ (R' ^ u) N)        
+     <- hsubst_rr A M₀ R (R' : use C -o use (B₁ ⊃ B₂)) 
+     <- hsubst_n A M₀ M (N : verif B₁).
+- : hsubst_rr A M₀ ([x : hyp A][u :^ (use C)] ∧E₁ ^ (R x ^ u)) 
+          ([u :^ (use C)] ∧E₁ ^ (R' ^ u))
+     <- hsubst_rr A M₀ R (R' : use C -o use (B₁ ∧ B₂)).
+- : hsubst_rr A M₀ ([x : hyp A][u :^ (use C)] ∧E₂ ^ (R x ^ u)) 
+          ([u :^ (use C)] ∧E₂ ^ (R' ^ u))
+     <- hsubst_rr A M₀ R (R' : use C -o use (B₁ ∧ B₂)).
+- : hsubst_rr A M₀ ([x : hyp A][u :^ (use C)] u) ([u :^ (use C)] u).
+
+- : hsubst_rn A B₂ M₀ ([x : hyp A][u :^ (use A)] ⊃E ^ (R x ^ u) (M x)) N'
+     <- hsubst_rn A (B₁ ⊃ B₂) M₀ R ((⊃I [y : hyp B₁] N y) : verif (B₁ ⊃ B₂))
+     <- hsubst_n A M₀ M (M' : verif B₁)
+     <- hsubst_n B₁ M' N (N' : verif B₂).
+- : hsubst_rn A B₁ M₀ ([x : hyp A][u :^ (use A)] ∧E₁ ^ (R x ^ u)) N₁
+     <- hsubst_rn A (B₁ ∧ B₂) M₀ R (∧I N₁ N₂ : verif (B₁ ∧ B₂)).
+- : hsubst_rn A B₂ M₀ ([x : hyp A][u :^ (use A)] ∧E₂ ^ (R x ^ u)) N₂
+     <- hsubst_rn A (B₁ ∧ B₂) M₀ R (∧I N₁ N₂ : verif (B₁ ∧ B₂)).
+- : hsubst_rn A A M₀ ([x : hyp A][u :^ (use A)] u) M₀.
+
+%worlds (bl_atom | bl_hyp)
+(hsubst_n _ _ _ _)
+(hsubst_rr _ _ _ _) 
+(hsubst_rn _ _ _ _ _).
+
+%reduces B <= A (hsubst_rn A B _ _ _).
+
+%total {(A B C) (M R S)}
+(hsubst_n A _ M _)
+(hsubst_rr B _ R _) 
+(hsubst_rn C _ _ S _).
+
+
+-----
+This page was copied from the MediaWiki version of the Twelf Wiki.
+If anything looks wrong, you can refer to the
+[wayback machine's version here](https://web.archive.org/web/20240303030303/http://twelf.org/wiki/Verifications_and_uses_in_HLF).

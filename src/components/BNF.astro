@@ -1,0 +1,10 @@
+---
+const { kind } = Astro.props;
+const rep1 = "many";
+const rep0 = "some";
+const alt = "alt";
+const opt = "opt";
+const suffix = (kind === "rep1") ? "+" : (kind === "rep0") ? rep0 : (kind === "alt") ? alt : (kind === "opt") ? opt : "";
+---
+
+<div><slot></slot>{suffix}</div>

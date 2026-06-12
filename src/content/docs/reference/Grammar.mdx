@@ -1,0 +1,29 @@
+---
+title: STELF's grammar
+---
+import BNF from "custom/BNF.astro";
+import Todo from "custom/Todo.astro";
+import { Badge } from '@astrojs/starlight/components';
+
+The grammar of STELF was designed with a couple goals in mind:
+<ul>
+  <li>To be parsable with a finite amount of lookahead (usually only 1 token) </li>
+  <li>Produce at _most_ one output</li>
+  <li>Substituting one identifier for another will either change _only_ the output at that identifier, or cause the parser to fail (all identifiers are syntactically equivalent), where an identifier is a sequence of non-whitespace charecters excluding `()[]{}%` </li>
+</ul> 
+
+Apart from this, there are a couple of other design choices that were made, including making STELF literate by default (per as a matter of fact STELF _starts_ in markup mode)
+:::caution
+The STELF grammar is _not_ the exact same as the Twelf grammar, and in many places completly different
+
+:::
+
+## The Core Lexical Syntax
+
+The core lexical syntax of STELF involves a couple different lexical classes.
+1. Whitespace: any sequence of charecters that have the property `White_Space=yes`  <Todo />
+2. Commands any sequence of non-whitespace charecters that begins with `%` and does not contain `()[]{}%`
+3. Identifiers: any sequence of non-whitespace charecters that does not begin with `%` and does not contain `()[]{}%`, this uses the longest match rule.
+4. Special characters: `()[]{}%` 
+5. Outer: any sequence of charecters up to `%`
+6. String literals, `%[`, with variants `%[[`, `%[[[`, etc, that are terminated by `%]` with the same number of `]`s as `[`s.  String literals can contain any charecters, including newlines and special characters, except `%`

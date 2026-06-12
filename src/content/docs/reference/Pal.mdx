@@ -1,0 +1,20 @@
+---
+title: PAL, managing Projects 
+---
+
+STELF, in a similar manner to Isabelle/HOL, is designed to consist of two syntaxes, one "outer" syntax and one "inner" syntax.
+However, unlike Isabelle/HOL, the outer syntax of STELF is much less powerful
+
+## The Running Model
+
+In a similar manner to the ML languages, rather than viewing a program as a set of definitions that we happen to be able to interact with, we instead view a program as a set of interactions we can save.
+This means, in terms of STELF, every input that is valid at the REPL is valid and possible in a file.
+
+:::caution
+This applies to _every_ REPL command, including commands like `%quit`, `%get`, `%set` etc.
+For obvious reasons, don't include these in sources
+:::
+
+## The Outer Language
+
+The outer language is what STELF starts in

@@ -1,0 +1,41 @@
+---
+title: The New Module System
+---
+import { Aside } from '@astrojs/starlight/components';
+
+:::caution
+The new module system is a work in progress. 
+Not all features mentioned have been (fully) implemented
+:::
+
+Twelf's old module system, outside of standard ML, is quite weak.
+The new module system is designed to be a true module system, which not only prevents name collisions but also allows for abstractions.
+There are three main features of the new module system:
+1. Scopes, which allow name collisions to be avoided 
+2. Macros, which allow for abstraction and code reuse
+3. Groups, which allow for code to be published as a library
+
+## Scopes 
+
+The first of these, scopes, deals with the problem of name collisions.
+In the old module system, scopes were mostly done by hand, e.g, `add/nat-zero`.
+While this avoids name collisions, it has a tendency to get long very quickly, for instance, `elab_r_exists_app` (from the original examples page, )
+In the new module system, we instead might write `%(add zero nat)`. Which is shorter and easier to read 
+
+### Inserting Scopes
+
+`%scope`
+`%open` 
+`%require`
+## Macros
+
+`%macro NUM name CMD`
+`%0`, `%1` etc 
+
+### Using 
+
+`%use NAME (ARGS...)`
+
+## Shorthands 
+
+`%data NAME SORT_ARGS... %where ...` -> `%sort NAME SORT_ARGS... %. %scope NAME ...`
